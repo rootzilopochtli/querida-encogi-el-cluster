@@ -1,0 +1,190 @@
+---
+# #############################################################################
+# Autor: Alex (@rootzilopochtli) - Content Architect en Red Hat
+# Versión: 1.0 (Generic Edition)
+# Descripción: Automatización End-to-End para MicroShift en AWS.
+# #############################################################################
+
+- name: Act 0 & 1 - Infrastructure Management (Local Host)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  # Configura aquí tus rutas y perfiles locales de AWS
+  environment:
+    AWS_PROFILE: "[TU_PERFIL_AWS]"
+    AWS_REGION: "us-east-2"
+    AWS_CONFIG_FILE: "[PATH_A_TU_HOME]/.aws/config"
+    AWS_SHARED_CREDENTIALS_FILE: "[PATH_A_TU_HOME]/.aws/credentials"
+  vars:
+    ami_id: "ami-06a5d87db53294c1f"  # RHEL 9.5 Verified
+    instance_type: "c7i-flex.large"
+    key_name: "[NOMBRE_DE_TU_LLAVE_AWS]"
+    sg_id: "[ID_DE_TU_SECURITY_GROUP]"
+    instance_name: "MicroShift-Automated-Node"
+
+  tasks:
+    - name: "Cleanup: Localizar instancias previas"
+      amazon.aws.ec2_instance_info:
+        filters:
+          "tag:Name": "{{ instance_name }}"
+          instance-state-name: ["running", "pending"]
+      register: old_instances
+
+    - name: "Cleanup: Terminar instancias antiguas"
+      amazon.aws.ec2_instance:
+        state: absent
+        instance_ids: "{{ old_instances.instances | map(attribute='instance_id') | list }}"
+        wait: yes
+      when: old_instances.instances | length > 0
+
+    - name: "AWS: Provisionar nueva instancia RHEL 9.5"
+      amazon.aws.ec2_instance:
+        name: "{{ instance_name }}"
+        key_name: "{{ key_name }}"
+        instance_type: "{{ instance_type }}"
+        image_id: "{{ ami_id }}"
+        security_group: "{{ sg_id }}"
+        wait: yes
+      register: ec2
+
+    - name: "Info: Persistir Instance ID"
+      set_fact:
+        target_instance_id: "{{ ec2.instance_ids[0] }}"
+
+    - name: "Inventario: Registrar IP pública"
+      add_host:
+        name: "{{ item.public_ip_address }}"
+        groups: launched_instances
+      loop: "{{ ec2.instances }}"
+
+- name: Act 2 - System Configuration and MicroShift Deployment
+  hosts: launched_instances
+  become: true
+  gather_facts: false
+  vars:
+    # Agrega aquí tus credenciales de Red Hat Subscription Manager
+    rh_org_id: "[TU_REDHAT_ORG_ID]"
+    rh_activation_key: "[TU_REDHAT_ACTIVATION_KEY]"
+    ocp_version: "4.21"
+    local_pull_secret: "{{ playbook_dir }}/openshift-pull-secret"
+
+  tasks:
+    - name: "SSH: Esperar conectividad"
+      wait_for_connection:
+        delay: 10
+        timeout: 300
+
+    - name: "Suscripción y Mantenimiento"
+      block:
+        - name: "RHSM: Habilitar gestión de repositorios"
+          ini_file:
+            path: /etc/rhsm/rhsm.conf
+            section: rhsm
+            option: manage_repos
+            value: "1"
+
+        - name: "SCA: Registro automático"
+          community.general.redhat_subscription:
+            state: present
+            org_id: "{{ rh_org_id }}"
+            activationkey: "{{ rh_activation_key }}"
+            force_register: yes
+
+        - name: "DNF: Habilitar repositorios"
+          rhsm_repository:
+            name:
+              - "rhocp-{{ ocp_version }}-for-rhel-9-x86_64-rpms"
+              - "fast-datapath-for-rhel-9-x86_64-rpms"
+            state: enabled
+
+        - name: "DNF: Actualización del sistema"
+          dnf:
+            name: "*"
+            state: latest
+
+    - name: "Mantenimiento: Reiniciar instancia"
+      reboot:
+        reboot_timeout: 300
+
+    - name: "Facts: Re-recolectar metadatos"
+      setup:
+
+    - name: "MicroShift: Instalación y Seguridad"
+      block:
+        - name: "Software: Instalar MicroShift y herramientas"
+          dnf:
+            name: [microshift, openshift-clients, firewalld]
+            state: present
+
+        - name: "Firewall: Limpiar servicios legados"
+          systemd:
+            name: "{{ item }}"
+            state: stopped
+            enabled: false
+            masked: yes
+          loop: [iptables, ip6tables, nftables]
+          failed_when: false
+
+        - name: "Firewall: Activar firewalld"
+          systemd:
+            name: firewalld
+            state: started
+            enabled: yes
+            masked: no
+
+        - name: "Firewall: Abrir puertos"
+          ansible.posix.firewalld:
+            port: "{{ item }}"
+            permanent: yes
+            state: enabled
+            immediate: yes
+          loop: [22/tcp, 6443/tcp, 10250/tcp, 2379-2380/tcp, 80/tcp, 443/tcp]
+
+        - name: "Config: Subir Pull Secret"
+          copy:
+            src: "{{ local_pull_secret }}"
+            dest: /etc/crio/openshift-pull-secret
+            mode: '0600'
+
+        - name: "SAN: Configurar IP pública en certificados"
+          copy:
+            dest: /etc/microshift/config.yaml
+            content: |
+              apiServer:
+                subjectAltNames:
+                  - {{ inventory_hostname }}
+            mode: '0644'
+
+        - name: "Servicio: Iniciar MicroShift"
+          systemd:
+            name: microshift
+            state: started
+            enabled: yes
+
+    - name: "Post-Config: Acceso Kubeconfig"
+      block:
+        - name: "Home: Crear directorio .kube"
+          file:
+            path: /home/ec2-user/.kube
+            state: directory
+            owner: ec2-user
+            mode: '0700'
+
+        - name: "Cluster: Esperar Kubeconfig"
+          wait_for:
+            path: /var/lib/microshift/resources/kubeadmin/kubeconfig
+
+        - name: "Cluster: Copiar credenciales"
+          copy:
+            src: /var/lib/microshift/resources/kubeadmin/kubeconfig
+            dest: /home/ec2-user/.kube/config
+            remote_src: yes
+            owner: ec2-user
+            mode: '0600'
+
+    - name: "Summary: Reporte de finalización"
+      debug:
+        msg:
+          - "¡DESPLIEGUE COMPLETADO!"
+          - "ID INSTANCIA: {{ hostvars['localhost']['target_instance_id'] }}"
+          - "IP PÚBLICA:  {{ inventory_hostname }}"

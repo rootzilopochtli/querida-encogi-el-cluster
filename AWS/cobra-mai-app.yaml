@@ -1,0 +1,53 @@
+---
+# #############################################################################
+# Aplicación: Cobra Mai Web Demo
+# Descripción: Servidor web con branding personalizado y exposición vía Route.
+# #############################################################################
+#
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-namespace
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-content
+  namespace: lab-namespace
+data:
+  index.html: |
+    <html>
+    <body>
+        <h1>¡Hola desde MicroShift!</h1>
+        <p>Desplegado por: <strong>[TU_NOMBRE]</strong></p>
+        <p><em>"[TU_LEMA_O_FRASE]"</em></p>
+    </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-server
+  namespace: lab-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-server
+  template:
+    metadata:
+      labels:
+        app: web-server
+    spec:
+      containers:
+      - name: nginx
+        image: quay.io/fedora/httpd-24:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: html-volume
+          mountPath: /var/www/html
+      volumes:
+      - name: html-volume
+        configMap:
+          name: web-content
