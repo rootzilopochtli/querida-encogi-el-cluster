@@ -1,0 +1,25 @@
+---
+# #############################################################################
+# Aplicación: Cobra Mai Data Process Demo
+# Descripción: Procesa datos en RHEL 10 sobre un host RHEL 9.7 estable.
+# #############################################################################
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: edge-training-job
+  namespace: lab-namespace
+spec:
+  template:
+    spec:
+      containers:
+      - name: trainee
+        image: registry.access.redhat.com/ubi10/ubi:latest
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          echo "Iniciando procesamiento..."
+          echo ">> [STEP 1] Validando Kernel Host: $(uname -a)"
+          echo ">> [STEP 2] Auditando Pod OS: $(cat /etc/redhat-release)"
+          echo ">> [STEP 3] Firma: [TU_NOMBRE]"
+      restartPolicy: Never
+  backoffLimit: 0
