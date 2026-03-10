@@ -1,5 +1,7 @@
 # 🤏☸️ Querida, encogí el clúster (Honey, I shrunk the cluster)
 
+![Banner](./banner.png)
+
 > *"Geek by nature, Linux by choice, Fedora of course..."*
 
 Este repositorio es un laboratorio experimental dedicado a la orquestación de **MicroShift** en entornos de nube pública. El objetivo es demostrar que el **EDGE Computing** no requiere infraestructuras masivas, sino una orquestación inteligente sobre la solidez de **Red Hat Enterprise Linux**.
