@@ -25,7 +25,7 @@ Aquí no consumimos nubes; las desarmamos para entender cómo funcionan.
 Este es un proyecto de uso general. Siéntete libre de:
 1. **Hacer un Fork** del proyecto.
 2. **Adaptar los archivos** con tu información local (llaves SSH, perfiles de nube, IDs de suscripción).
-3. **Enviar un PR** si encuentras una solución a la **[Escena Post-Créditos de AWS](./AWS_TROUBLESHOOTING_ROUTER.md)** o si quieres añadir soporte para una nueva nube.
+3. **Enviar un PR** si encuentras una solución a la **[Escena Post-Créditos de AWS](./AWS/AWS_TROUBLESHOOTING_ROUTER.md)** o si quieres añadir soporte para una nueva nube.
 
 ---
 👤 **Alex (@rootzilopochtli)** *Content Architect en Red Hat | Autor de "Fedora Linux System Administration"*
