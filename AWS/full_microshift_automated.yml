@@ -23,6 +23,7 @@
     instance_name: "MicroShift-Automated-Node"
 
   tasks:
+    # Garantizamos una demo limpia buscando si hay procesos de labs previos
     - name: "Cleanup: Localizar instancias previas"
       amazon.aws.ec2_instance_info:
         filters:
@@ -30,6 +31,7 @@
           instance-state-name: ["running", "pending"]
       register: old_instances
 
+    # Eliminamos lo antiguo para evitar colisiones de IP o nombres
     - name: "Cleanup: Terminar instancias antiguas"
       amazon.aws.ec2_instance:
         state: absent
@@ -37,6 +39,7 @@
         wait: yes
       when: old_instances.instances | length > 0
 
+    # Solicitud de la nueva VM a AWS. Esperamos a que el estado sea 'running'
     - name: "AWS: Provisionar nueva instancia RHEL 9.5"
       amazon.aws.ec2_instance:
         name: "{{ instance_name }}"
@@ -47,16 +50,19 @@
         wait: yes
       register: ec2
 
+    # Capturamos el ID de la instancia para el reporte de cierre del playbook
     - name: "Info: Persistir Instance ID"
       set_fact:
         target_instance_id: "{{ ec2.instance_ids[0] }}"
 
+    # Inyectamos la IP en el inventario de Ansible para saltar al Acto 2
     - name: "Inventario: Registrar IP pública"
       add_host:
         name: "{{ item.public_ip_address }}"
         groups: launched_instances
       loop: "{{ ec2.instances }}"
 
+# --- ACTO 2: CONFIGURACIÓN Y DESPLIEGUE ---
 - name: Act 2 - System Configuration and MicroShift Deployment
   hosts: launched_instances
   become: true
@@ -66,9 +72,11 @@
     rh_org_id: "[TU_REDHAT_ORG_ID]"
     rh_activation_key: "[TU_REDHAT_ACTIVATION_KEY]"
     ocp_version: "4.21"
+    # Uso de variable mágica para garantizar que encuentre el Pull Secret
     local_pull_secret: "{{ playbook_dir }}/openshift-pull-secret"
 
   tasks:
+    # Pausa necesaria mientras el sistema operativo termina su arranque
     - name: "SSH: Esperar conectividad"
       wait_for_connection:
         delay: 10
@@ -76,6 +84,7 @@
 
     - name: "Suscripción y Mantenimiento"
       block:
+        # Configuración vital para que RHEL en AWS vea el CDN de Red Hat
         - name: "RHSM: Habilitar gestión de repositorios"
           ini_file:
             path: /etc/rhsm/rhsm.conf
@@ -83,6 +92,7 @@
             option: manage_repos
             value: "1"
 
+        # Registro automático mediante Simple Content Access (SCA)
         - name: "SCA: Registro automático"
           community.general.redhat_subscription:
             state: present
@@ -90,6 +100,7 @@
             activationkey: "{{ rh_activation_key }}"
             force_register: yes
 
+        # Habilitamos canales específicos para MicroShift y conectividad de red
         - name: "DNF: Habilitar repositorios"
           rhsm_repository:
             name:
@@ -97,15 +108,18 @@
               - "fast-datapath-for-rhel-9-x86_64-rpms"
             state: enabled
 
+        # Actualización completa para iniciar con una base de seguridad fresca
         - name: "DNF: Actualización del sistema"
           dnf:
             name: "*"
             state: latest
 
+    # Reinicio para aplicar el kernel de RHEL 9.7 y parches críticos
     - name: "Mantenimiento: Reiniciar instancia"
       reboot:
         reboot_timeout: 300
 
+    # Recolectamos los facts de nuevo para que variables como ansible_distribution existan
     - name: "Facts: Re-recolectar metadatos"
       setup:
 
@@ -116,6 +130,7 @@
             name: [microshift, openshift-clients, firewalld]
             state: present
 
+        # Eliminamos servicios legados para evitar colisiones con el router de K8s
         - name: "Firewall: Limpiar servicios legados"
           systemd:
             name: "{{ item }}"
@@ -132,6 +147,7 @@
             enabled: yes
             masked: no
 
+        # Apertura de puertos requeridos para el API, Ingress y mantenimiento
         - name: "Firewall: Abrir puertos"
           ansible.posix.firewalld:
             port: "{{ item }}"
@@ -140,12 +156,14 @@
             immediate: yes
           loop: [22/tcp, 6443/tcp, 10250/tcp, 2379-2380/tcp, 80/tcp, 443/tcp]
 
+        # Sincronización del secreto necesario para descargar imágenes de pods
         - name: "Config: Subir Pull Secret"
           copy:
             src: "{{ local_pull_secret }}"
             dest: /etc/crio/openshift-pull-secret
             mode: '0600'
 
+        # Parche de SAN para que el certificado TLS reconozca la IP de AWS
         - name: "SAN: Configurar IP pública en certificados"
           copy:
             dest: /etc/microshift/config.yaml
@@ -170,10 +188,12 @@
             owner: ec2-user
             mode: '0700'
 
+        # Esperamos a que el proceso de MicroShift genere las credenciales
         - name: "Cluster: Esperar Kubeconfig"
           wait_for:
             path: /var/lib/microshift/resources/kubeadmin/kubeconfig
 
+        # Copiamos el config al home para facilitar el uso del comando 'oc'
         - name: "Cluster: Copiar credenciales"
           copy:
             src: /var/lib/microshift/resources/kubeadmin/kubeconfig
@@ -182,9 +202,14 @@
             owner: ec2-user
             mode: '0600'
 
+    # Resumen final con metadatos para la validación y limpieza manual
     - name: "Summary: Reporte de finalización"
       debug:
         msg:
-          - "¡DESPLIEGUE COMPLETADO!"
-          - "ID INSTANCIA: {{ hostvars['localhost']['target_instance_id'] }}"
-          - "IP PÚBLICA:  {{ inventory_hostname }}"
+          - "##########################################################"
+          - "¡DESPLIEGUE COMPLETADO CON ÉXITO!"
+          - "##########################################################"
+          - "INSTANCE ID: {{ hostvars['localhost']['target_instance_id'] }}"
+          - "PUBLIC IP:  {{ inventory_hostname }}"
+          - "VALIDACIÓN:  ./check_remote_microshift.sh"
+          - "##########################################################"
