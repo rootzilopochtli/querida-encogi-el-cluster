@@ -274,9 +274,16 @@ La orquestación inteligente de MicroShift nos permite transformar hardware limi
 ---
 
 ## Escena Post-Creditos: El Agujero del Conejo (Solución en progreso) 🕳️
-Durante el laboratorio, nos encontramos con el **"Portero Rebelde"** (Ingress). A pesar de que el Pod de la aplicación estaba saludable y el Service respondía correctamente a las peticiones internas, el puerto físico 80 del host de RHEL se negaba a escuchar.
+Durante el laboratorio, , no todo fue automatización perfecta. Nos enfrentamos a un desafío real con el **Router de MicroShift**, donde la abstracción de Kubernetes chocó frontalmente con la realidad del metal en AWS.  
+
+A pesar de que el Pod de la aplicación estaba saludable y el Service respondía correctamente a las peticiones internas, el puerto físico 80 del host de RHEL se negaba a escuchar.
 
 * **Anatomía del fallo:** La conectividad interna (Pod-to-Pod y Service IP) fue exitosa, pero el proceso del Router no logró realizar el *bind* al puerto físico.
 * **Estado:** Esta investigación sigue abierta. Se sospecha de una restricción de privilegios en el modo **HostNetwork** o una colisión de políticas de seguridad al inicio del servicio. Se documentará el hallazgo final en una actualización futura de este diario.
 
+Si quieres ver la autopsia técnica, las pruebas de "bisturí" con pods de diagnóstico y el estado actual de la investigación, consulta el diario especializado:
+
+👉 **[Diario de Troubleshooting: El Misterio del Puerto 80](./AWS_TROUBLESHOOTING_ROUTER.md)**
+
+---
 ---

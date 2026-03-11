@@ -14,3 +14,6 @@ Este directorio contiene los manifiestos y scripts para desplegar un nodo compac
 2. Personaliza las variables en `full_microshift_automated.yml` (Llaves, perfiles, etc.).
 3. Ejecuta: `ansible-playbook full_microshift_automated.yml`.
 4. Sincroniza tu clúster: `./check_remote_microshift.sh`.
+
+---
+👤 **Alex (@rootzilopochtli)** *Content Architect en Red Hat | Autor de "Fedora Linux System Administration"*
