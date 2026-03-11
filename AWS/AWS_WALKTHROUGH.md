@@ -266,6 +266,47 @@ Utilizamos un **Kubernetes Job** para procesar una tarea autónoma. Los resultad
 3. El payload de **RHEL 10.1 (Coughlan)** operó con éxito total sobre el metal de **RHEL 9**.
 ---
 
+## 🗺️ Mapa del Experimento: Del Código al Futuro
+
+Para entender cómo se construye la "verdad científica" en este laboratorio, es necesario visualizar la interacción entre nuestra terminal local, la nube de AWS y las capas de software. El siguiente diagrama describe el flujo de orquestación completo:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant L as Terminal Local (Ragnarok)
+    participant A as AWS Cloud (API)
+    participant I as Instancia (RHEL 9 Host)
+    participant M as MicroShift (Control Plane)
+    participant P as Pod (RHEL 10 Payload)
+
+    Note over L, A: Paso 1: El Playbook (Orquestación)
+    L->>A: Provisión de Infraestructura (Ansible)
+    A-->>I: Crea Instancia EC2 c7i-flex
+    L->>I: Configuración de Sistema (SCA, Repos, Updates)
+    L->>I: Despliegue de MicroShift & Firewall
+
+    Note over I, M: Paso 2: El Clúster (Plataforma)
+    I->>M: Inicialización de servicios
+    M-->>I: Generación de CA y Kubeconfig
+
+    Note over L, I: Paso 3: Bash Script (Confianza)
+    L->>I: Sincronización mTLS (check_remote_microshift.sh)
+    I-->>L: Transferencia de Certificados y CA
+    L->>L: Parcheo de KUBECONFIG local
+
+    Note over L, P: Paso 4: El Experimento (La Verdad)
+    L->>M: Despliegue de Aplicación (cobra-mai-job.yaml)
+    M->>P: Programación del Pod (RHEL 10)
+    P-->>L: Verificación de Logs (Éxito Científico)
+```
+**Desglose del Flujo**:
+1. **La Orquestación (Playbook)**: Ansible actúa como el director de orquesta, asegurando que la infraestructura en AWS y la configuración de RHEL 9 sean idénticas en cada ejecución.
+
+2. **La Confianza (Bash-Script)**: Debido a que MicroShift genera certificados dinámicos, el script de Bash automatiza el "apretón de manos" de seguridad (mTLS), permitiendo que tu terminal local maneje el clúster remoto de forma transparente.
+
+3. **La Verdad Científica (K8s Job)**: El Job de Kubernetes no es solo una aplicación; es nuestra sonda de prueba. Al ejecutar RHEL 10 dentro de un host RHEL 9, confirmamos que la abstracción de MicroShift funciona y que el experimento ha validado nuestra hipótesis de interoperabilidad generacional.
+
+---
 ## Epílogo
 La orquestación inteligente de MicroShift nos permite transformar hardware limitado en nodos de innovación constante. El EDGE no es solo hardware pequeño; es la frontera donde la estabilidad y el futuro coexisten.
 
@@ -286,4 +327,4 @@ Si quieres ver la autopsia técnica, las pruebas de "bisturí" con pods de diagn
 👉 **[Diario de Troubleshooting: El Misterio del Puerto 80](./AWS_TROUBLESHOOTING_ROUTER.md)**
 
 ---
----
+👤 **Alex (@rootzilopochtli)** *Content Architect en Red Hat | Autor de "Fedora Linux System Administration"*
