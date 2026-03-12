@@ -3,6 +3,12 @@
 # Aplicación: Cobra Mai Data Process Demo
 # Descripción: Procesa datos en RHEL 10 sobre un host RHEL 9.7 estable.
 # #############################################################################
+#
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-namespace
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
