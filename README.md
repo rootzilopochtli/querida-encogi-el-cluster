@@ -1,6 +1,6 @@
 # 🤏☸️ Querida, encogí el clúster (Honey, I shrunk the cluster)
 
-![Banner](./banner.png)
+![Banner](./main_banner.png)
 
 > *"Geek by nature, Linux by choice, Fedora of course..."*
 
