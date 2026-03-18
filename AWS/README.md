@@ -1,5 +1,7 @@
 # MicroShift en AWS ☁️
 
+![Banner](./banner.png)
+
 Este directorio contiene los manifiestos y scripts para desplegar un nodo compacto de MicroShift en AWS Ohio (`us-east-2`).
 
 ## 🛠️ Contenido
@@ -16,4 +18,4 @@ Este directorio contiene los manifiestos y scripts para desplegar un nodo compac
 4. Sincroniza tu clúster: `./check_remote_microshift.sh`.
 
 ---
-👤 **Alex (@rootzilopochtli)** *Content Architect en Red Hat | Autor de "Fedora Linux System Administration"*
+👤 **Alex (@rootzilopochtli)** *Content Architect en Red Hat | Miembro de Fedora Project | Autor de "Fedora Linux System Administration"*
