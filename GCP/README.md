@@ -14,4 +14,4 @@ Próximamente se añadirán los recursos para desplegar MicroShift sobre Google 
 *Vuelve pronto para más actualizaciones.*
 
 ---
-👤 **Alex (@rootzilopochtli)** *Content Architect en Red Hat | Autor de "Fedora Linux System Administration"*
+👤 **Alex (@rootzilopochtli)** *Content Architect en Red Hat | Miembro de Fedora Project | Autor de "Fedora Linux System Administration"*

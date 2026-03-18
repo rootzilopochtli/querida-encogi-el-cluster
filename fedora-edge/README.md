@@ -10,7 +10,7 @@ Esta sección del repositorio se encuentra actualmente bajo una reestructuració
 Si vienes de la plática en Saltillo, ¡bienvenido!.
 Para replicar el laboratorio tal cual lo viste en la presentación, te sugerimos:
 1.  **Clonar el repositorio** completo.
-2.  **Seguir las guías de la carpeta [/AWS](../AWS)**, que contienen los archivos `cobra-mai-app.yaml` y los playbooks de automatización que utilizamos durante la demo.
+2.  **Seguir las guías del direcorio [/AWS](../AWS)**, que contienen los archivos `cobra-mai-app.yaml` y el playbook y script de automatización que utilizamos durante la demo.
 3.  Consultar el método de **[Build a lab quickly](https://www.redhat.com/en/blog/build-lab-quickly)** para preparar tu entorno base en KVM.
 
 ### 🚀 Próximamente en esta sección:
