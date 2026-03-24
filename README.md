@@ -4,15 +4,15 @@
 
 > *"Geek by nature, Linux by choice, Fedora of course..."*
 
-Este repositorio es el centro de mando del **Tour 2026**, diseñado para llevar la potencia de **MicroShift** desde el laboratorio personal hasta la nube pública. Aquí no solo consumimos tecnología; la desarmamos para entender la soberanía del sistema operativo.
+Este repositorio es el centro de mando del Proyecto **Querida, encogí el clúster**, diseñado para llevar la potencia de **MicroShift** desde el laboratorio personal hasta la nube pública. Aquí no solo consumimos tecnología; la desarmamos para entender la soberanía del sistema operativo.
 
 ## ⚛️ Filosofía: El Factor Feynman
 *"El principio de la ciencia, casi la definición, es el siguiente: «La prueba de todo conocimiento es el experimento». El experimento es el único juez de la verdad científica"*.
 
-## 🚀 Estructura del Taller (Los 4 Actos)
-Para evitar la complejidad de la abstracción, este proyecto se divide en fases lógicas que permiten entender el _detrás de cámaras_ de cada despliegue:
+## 🚀 Estructura del Proyecto (Los 4 Actos)
+Para evitar la complejidad de la abstracción, este proyecto se divide en fases lógicas de ejecución que permiten entender el _detrás de cámaras_ de cada despliegue:
 
-* **Acto 0: Cimientos del Edge.** Creación de la VM (KVM) o aprovisionamiento de recursos en la nube.
+* **Acto 0: Cimientos del Edge.** Creación de la VM (KVM) o aprovisionamiento de recursos en la nube [Exclusivo de [Fedora Edge / Local](./fedora-edge)].
 * **Acto 1: Orquestación de Infraestructura.** Configuración de la instancia y registro del nodo mediante Ansible.
 * **Acto 2: El Despliegue Maestro.** Instalación de MicroShift, gestión de mTLS y validación de salud mediante el script `check_remote_microshift.sh`.
 * **Acto 3: La Verdad Científica.** Despliegue de aplicaciones y validación de cargas de trabajo futuras (RHEL 10 sobre RHEL 9).
