@@ -1,0 +1,32 @@
+# #############################################################################
+# Autor: Alex (@rootzilopochtli)
+# Plantilla de configuración para despliegues en AWS (MicroShift)
+# Instrucciones: Completa los datos con tu información.
+# #############################################################################
+
+# --- Infraestructura AWS ---
+# El perfil configurado en ~/.aws/credentials
+aws_profile: "<TU_PERFIL_AWS>"
+
+# Nombre de la llave registrada en la consola de AWS
+aws_key_name: "<NOMBRE_LLAVE_AWS>"
+
+# Ruta local absoluta o relativa a la llave privada (.pem)
+aws_key_path: "~/.ssh/<TU_LLAVE>.pem"
+
+# ID del Security Group que permite tráfico en los puertos 6443, 80 y 443
+sg_id: "sg-<TU_ID_AQUÍ>"
+
+# Región de AWS para el despliegue (ej: us-east-2)
+aws_region: "us-east-2"
+
+# --- Credenciales Red Hat (RHSM) ---
+# ID de Organización disponible en access.redhat.com
+rh_org_id: "<TU_ORG_ID>"
+
+# Activation Key para registro automático del sistema
+rh_activation_key: "<TU_ACTIVATION_KEY>"
+
+# --- MicroShift Config ---
+# Versión de OpenShift/MicroShift a desplegar
+ocp_version: "4.21"
