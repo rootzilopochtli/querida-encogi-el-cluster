@@ -1,0 +1,103 @@
+---
+# #############################################################################
+# Autor: Alex (@rootzilopochtli)
+# Aplicación: Cobra Mai Web Demo
+# Proyecto: Querida, encogi el Clúster
+# Objeto: Route
+# Propósito: Exponer la aplicación al exterior usando DNS dinámico.
+# El marcador ${NODE_IP} permite que la misma plantilla funcione en
+# AWS, GCP o KVM local sin editar el archivo.
+# Descripción: Servidor web con branding personalizado y exposición vía Route.
+# Status: El agujero del conejo
+# #############################################################################
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cobra-mai-lab
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-content
+  namespace: cobra-mai-lab
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>MicroShift Demo - Cobra Mai</title>
+        <style>
+            body { font-family: sans-serif; text-align: center; background-color: #2c3e50; color: white; padding: 50px; }
+            .card { background: #34495e; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: inline-block; }
+            h1 { color: #e74c3c; }
+            .motto { font-style: italic; color: #bdc3c7; }
+            .footer { margin-top: 20px; font-size: 0.8em; color: #7f8c8d; }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h1>¡Hola desde MicroShift en AWS!</h1>
+            <p>AWS Student Community Day - Saltillo 2026</p>
+            <hr>
+            <p class="motto">"Geek by nature, Linux by choice, Fedora of course..."</p>
+            <p>Desplegado por: <strong>Alex (@rootzilopochtli)</strong></p>
+            <div class="footer">Cobra Mai Community | rhel-9.7-microshift</div>
+        </div>
+    </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cobra-mai-web
+  namespace: cobra-mai-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cobra-mai-web
+  template:
+    metadata:
+      labels:
+        app: cobra-mai-web
+    spec:
+      containers:
+      - name: nginx
+        image: quay.io/fedora/httpd-24:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: html-volume
+          mountPath: /var/www/html
+      volumes:
+      - name: html-volume
+        configMap:
+          name: web-content
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cobra-mai-web
+  namespace: cobra-mai-lab
+spec:
+  selector:
+    app: cobra-mai-web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: cobra-mai-web
+  namespace: cobra-mai-lab
+spec:
+  # El marcador ${NODE_IP} será reemplazado por la IP real en vivo
+  host: cobra-mai-web-cobra-mai-lab.apps.${NODE_IP}.nip.io
+  to:
+    kind: Service
+    name: cobra-mai-web
+  port:
+    targetPort: 80

@@ -1,0 +1,237 @@
+---
+# ##################################################################################################################
+# Autor: Alex (@rootzilopochtli)
+# Playbook: Despliegue Modular de MicroShift
+# Estrategia: Dividir la complejidad en Actos pedagógicos.
+# Uso: ansible-playbook microshift_modular_deploy.yml -e "target_env=local local_ip=$IP local_key=$KEY"
+#      o para AWS: ansible-playbook microshift_modular_deploy.yml -e "target_env=aws" -e "@vars_aws.yml"
+# Motto: "Geek by nature, Linux by choice, Fedora of course..."
+# ##################################################################################################################
+
+- name: Act 0 - Pre-flight Checks (Local Host)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    local_pull_secret: "{{ playbook_dir }}/../openshift-pull-secret"
+  tasks:
+    # Propósito: Sin el Pull Secret, MicroShift no puede descargar las
+    # imágenes de infraestructura desde quay.io.
+    # 0.1 Validación de Pull Secret
+    - name: "Check: Validar Pull Secret"
+      stat:
+        path: "{{ local_pull_secret }}"
+      register: pull_secret_stat
+
+    - name: "Fail: Falta Pull Secret"
+      fail:
+        msg: "❌ ERROR: No se encontró 'openshift-pull-secret' en {{ playbook_dir }}."
+      when: not pull_secret_stat.stat.exists
+
+    # 0.2 Validación Simplificada de Variables AWS
+    - name: "AWS Help: Validar variables necesarias"
+      fail:
+        msg: |
+          ❓ ERROR DE CONFIGURACIÓN (AWS):
+          Faltan variables críticas. Asegúrate de que 'vars_aws.yml' exista y contenga:
+          aws_profile, aws_key_name, aws_key_path, sg_id, aws_region,
+          rh_org_id, rh_activation_key, ocp_version.
+      when:
+        - (target_env | default('')) == "aws"
+        - (aws_key_name is not defined or rh_org_id is not defined or sg_id is not defined)
+
+    - name: "Help: Validar target_env"
+      fail:
+        msg: "🚀 Uso: ansible-playbook microshift_modular_deploy.yml -e \"target_env=[local|aws|gcp]\""
+      when: target_env is not defined
+
+- name: Act 1 - Infrastructure Management (Local Host)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    # 1.1 Lógica de AWS (Gestionada por vars_aws.yml)
+    - name: "AWS: Gestión de Infraestructura"
+      block:
+        - name: "AWS: Localizar instancias previas"
+          amazon.aws.ec2_instance_info:
+            region: "{{ aws_region }}"
+            filters:
+              # Buscamos ambos nombres para asegurar limpieza total
+              "tag:Name": ["MicroShift-Node", "MicroShift-Automated-Node"]
+              instance-state-name: ["running", "pending"]
+          register: old_instances
+
+        - name: "AWS: Terminar instancias antiguas"
+          amazon.aws.ec2_instance:
+            region: "{{ aws_region }}"
+            state: absent
+            instance_ids: "{{ old_instances.instances | map(attribute='instance_id') | list }}"
+            wait: yes
+          when: old_instances.instances | length > 0
+
+        - name: "AWS: Lanzar nueva instancia"
+          amazon.aws.ec2_instance:
+            region: "{{ aws_region }}"
+            name: "{{ instance_name | default('MicroShift-Node') }}"
+            key_name: "{{ aws_key_name }}"
+            instance_type: "{{ instance_type | default('c7i-flex.large') }}"
+            image_id: "{{ ami_id | default('ami-06a5d87db53294c1f') }}"
+            security_group: "{{ sg_id }}"
+            wait: yes
+          register: ec2
+          when: target_env == "aws"
+
+        - name: "Info: Persistir Instance ID para el resumen"
+          set_fact:
+            target_instance_id: "{{ ec2.instance_ids[0] }}"
+          when:
+            - target_env == "aws"
+            - ec2.changed or ec2.instances is defined # Seguridad extra
+
+        - name: "Inventario: Registrar nodo AWS"
+          add_host:
+            name: "{{ item.public_ip_address }}"
+            groups: microshift_nodes
+            ansible_user: "ec2-user"
+            ansible_ssh_private_key_file: "{{ aws_key_path }}"
+          loop: "{{ ec2.instances }}"
+      environment:
+        AWS_PROFILE: "{{ aws_profile }}"
+        AWS_REGION: "{{ aws_region }}"
+        AWS_CONFIG_FILE: "{{ lookup('env', 'HOME') }}/.aws/config"
+        AWS_SHARED_CREDENTIALS_FILE: "{{ lookup('env', 'HOME') }}/.aws/credentials"
+      when: target_env == "aws"
+
+    # 1.2 Lógica Local (KVM)
+    - name: "Local: Registrar nodo edge-user"
+      add_host:
+        name: "{{ local_ip }}"
+        groups: microshift_nodes
+        ansible_user: "edge-user"
+        ansible_ssh_private_key_file: "{{ local_key }}"
+      when: target_env == "local"
+
+- name: Act 2 - System Configuration and MicroShift Deployment
+  hosts: microshift_nodes
+  become: true
+  gather_facts: false  # 1. Desactivamos la recolección automática
+  vars:
+    # DEFINICIÓN LIMPIA: Eliminamos la auto-referencia para evitar el bucle
+    ocp_version: "4.21"
+    local_pull_secret: "{{ playbook_dir }}/openshift-pull-secret"
+    env_users: { aws: "ec2-user", gcp: "gcp-user", local: "edge-user" }
+    target_user: "{{ env_users[target_env] }}"
+    target_home: "/home/{{ env_users[target_env] }}"
+
+  tasks:
+    - name: "SSH: Esperar conectividad real"
+      wait_for_connection:
+        delay: 30       # Esperamos 30s antes del primer intento
+        timeout: 480    # Damos hasta 8 min (las instancias c7i son rápidas, pero RHEL 9 hace mucho post-boot)
+
+    - name: "Facts: Recolectar metadatos manualmente"
+      setup: # 2. Recolección diferida
+
+    # --- SUSCRIPCIÓN (Solo Nube) ---
+    - name: "Suscripción: Registrar sistema (RHSM)"
+      community.general.redhat_subscription:
+        state: present
+        org_id: "{{ rh_org_id }}"
+        activationkey: "{{ rh_activation_key }}"
+        force_register: yes
+      when: target_env != "local"
+
+    # --- REINTEGRACIÓN CRÍTICA PARA AWS ---
+    - name: "RHSM: Habilitar gestión de repositorios en config"
+      ini_file:
+        path: /etc/rhsm/rhsm.conf
+        section: rhsm
+        option: manage_repos
+        value: "1"
+      when: target_env != "local"
+
+    - name: "RHSM: Refrescar inventario"
+      command: subscription-manager refresh
+      when: target_env != "local"
+
+    - name: "Cloud Maint: Actualizar y Reiniciar"
+      block:
+        - name: "DNF: Actualización completa"
+          dnf: { name: "*", state: latest }
+        - name: "Mantenimiento: Reiniciar"
+          reboot: { reboot_timeout: 300 }
+      when: target_env != "local"
+
+    # Propósito: MicroShift requiere el canal de Fast Datapath para
+    # gestionar la red virtual OVN-Kubernetes.
+    - name: "Repositorios: Habilitar canales de MicroShift"
+      rhsm_repository:
+        name:
+          - "rhocp-{{ ocp_version }}-for-rhel-9-x86_64-rpms"
+          - "fast-datapath-for-rhel-9-x86_64-rpms" # Vital para openvswitch3.5
+        state: enabled
+      # Ahora ocp_version siempre tendrá valor, ya sea de vars_aws.yml o el default '4.21'
+
+    - name: "Software: Instalar MicroShift"
+      dnf:
+        name: [microshift, openshift-clients, firewalld]
+        state: present
+
+    - name: "Seguridad: Configurar Firewalld"
+      block:
+        - name: "Firewall: Asegurar servicio activo"
+          systemd:
+            name: firewalld
+            state: started
+            enabled: yes
+        - name: "Firewall: Abrir puertos requeridos"
+          ansible.posix.firewalld:
+            port: "{{ item }}"
+            permanent: yes
+            state: enabled
+            immediate: yes
+          loop: [22/tcp, 6443/tcp, 10250/tcp, 2379-2380/tcp, 80/tcp, 443/tcp]
+
+    - name: "Config: Inyectar Pull Secret"
+      copy:
+        src: "{{ local_pull_secret }}"
+        dest: /etc/crio/openshift-pull-secret
+        mode: '0600'
+
+    # Propósito: Inyectar la IP del nodo en el certificado del API Server
+    # para permitir acceso remoto seguro (mTLS).
+    - name: "MicroShift: Certificados y Arranque"
+      block:
+        - name: "SAN: Configurar certificados con IP actual"
+          copy:
+            dest: /etc/microshift/config.yaml
+            content: |
+              apiServer:
+                subjectAltNames:
+                  - {{ inventory_hostname }}
+            mode: '0644'
+        - name: "MicroShift: Iniciar servicio"
+          systemd:
+            name: microshift
+            state: started
+            enabled: yes
+
+    - name: "Post-Config: Configurar Kubeconfig"
+      shell: |
+        mkdir -p {{ target_home }}/.kube
+        cp /var/lib/microshift/resources/kubeadmin/kubeconfig {{ target_home }}/.kube/config
+        chown -R {{ target_user }}:{{ target_user }} {{ target_home }}/.kube
+      args:
+        creates: "{{ target_home }}/.kube/config"
+
+    - name: "Summary: Reporte de Cierre"
+      debug:
+        msg:
+          - "##########################################################"
+          - "¡DESPLIEGUE EN {{ target_env | upper }} EXITOSO!"
+          - "##########################################################"
+          - "IP: {{ inventory_hostname }} | USUARIO: {{ target_user }}"
+          - "ID INSTANCIA: {{ hostvars['localhost']['target_instance_id'] | default('N/A (Local)') }}"
+          - "VALIDACIÓN: ./check_remote_microshift.sh"
+          - "##########################################################"

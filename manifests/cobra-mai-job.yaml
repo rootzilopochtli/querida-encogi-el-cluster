@@ -1,0 +1,46 @@
+---
+# #############################################################################
+# Autor: Alex (@rootzilopochtli)
+# Laboratorio: Cobra Mai - Sesión de Entrenamiento (Future-Gen Edge)
+# Versión: 2.0 (RHEL 10 Edition)
+# Descripción: Procesa datos en RHEL 10 sobre un host RHEL 9.7 estable.
+# #############################################################################
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cobra-mai-lab
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cobra-mai-training
+  namespace: cobra-mai-lab
+spec:
+  template:
+    spec:
+      containers:
+      - name: trainee
+        # Usando la imagen que mostrará la "Verdad Científica"
+        image: registry.access.redhat.com/ubi10/ubi:latest
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          echo "################################################"
+          echo "#    COBRA MAI - RHEL 10 EDGE TRAINING         #"
+          echo "################################################"
+          echo "Iniciando secuencia de procesamiento futuro..."
+          sleep 2
+          echo ">> [STEP 1] Strike First: Validando Kernel del Host (RHEL 9)..."
+          uname -a
+          sleep 1
+          echo ">> [STEP 2] Strike Hard: Auditando Sistema del Pod (RHEL 10)..."
+          cat /etc/redhat-release
+          sleep 1
+          echo ">> [STEP 3] No Mercy: Verificando coexistencia de capas..."
+          echo "Análisis completado: Payload RHEL 10 operando sobre Metal RHEL 9."
+          echo "------------------------------------------------"
+          echo "Motto: Geek by nature, Linux by choice, Fedora of course..."
+          echo "################################################"
+      restartPolicy: Never
+  backoffLimit: 4
