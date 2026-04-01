@@ -13,9 +13,24 @@ Este repositorio es el centro de mando del Proyecto **Querida, encogí el clúst
 Para evitar la complejidad de la abstracción, este proyecto se divide en fases lógicas de ejecución que permiten entender el _detrás de cámaras_ de cada despliegue:
 
 * **Acto 0: Cimientos del Edge.** Creación de la VM (KVM) o aprovisionamiento de recursos en la nube [Exclusivo de [Fedora Edge / Local](./fedora-edge)].
+```
+$ ./provision_edge_kvm.sh
+```
 * **Acto 1: Orquestación de Infraestructura.** Configuración de la instancia y registro del nodo mediante Ansible.
+```
+fedora-edge: $ ansible-playbook microshift_modular_deploy.yml -e "target_env=local local_ip=$IP local_key=$KEY"
+AWS:         $ ansible-playbook microshift_modular_deploy.yml -e "target_env=aws" -e "@vars_aws.yml"
+```
 * **Acto 2: El Despliegue Maestro.** Instalación de MicroShift, gestión de mTLS y validación de salud mediante el script `check_remote_microshift.sh`.
+```
+$ ./check_remote_microshift.sh
+
+# Nota: Te pedirá seleccionar tu llave, el entorno (Local, AWS) y la IP del nodo.
+```
 * **Acto 3: La Verdad Científica.** Despliegue de aplicaciones y validación de cargas de trabajo futuras (RHEL 10 sobre RHEL 9).
+```
+$ envsubst < TU_ARCHIVO.yaml | oc apply -f -
+```
 
 ## 🛠️ Prerrequisitos Globales (Indispensables)
 Antes de iniciar cualquier laboratorio (AWS, Local o GCP), es obligatorio completar la configuración de tu ecosistema de Red Hat.
@@ -26,7 +41,7 @@ Antes de iniciar cualquier laboratorio (AWS, Local o GCP), es obligatorio comple
 
 | Plataforma | Estado | Enfoque |
 | :--- | :--- | :--- |
-| [**Fedora Edge / Local**](./fedora-edge) | 🚀 Listo | Soberanía total y Golden Images con Image Builder. |
+| [**Fedora Edge / Local**](./fedora-edge) | ✅ Activo | Soberanía total y Golden Images con Image Builder. |
 | [**AWS (Amazon Web Services)**](./AWS) | ✅ Activo | Escalabilidad en la nube de Ohio. |
 | [**GCP (Google Cloud Platform)**](./GCP) | 🚧 WIP | Próximamente. |
 
