@@ -13,7 +13,7 @@ Para este laboratorio, el "Juez de Hardware" requiere que tu instancia cumpla co
 ---
 
 ## 🍎 macOS (Apple Silicon M1/M2/M3/M4 & Intel)
-*Colaboración especial de: [Patrick Gomez]([pagomez-cd](https://github.com/pagomez-cd)).*
+*Colaboración especial de: [Patrick Gomez](https://github.com/pagomez-cd).*
 
 1. **Identificación de Arquitectura:** Antes de descargar nada, haz clic en el menú Apple (esquina superior izquierda) y selecciona "Acerca de esta Mac".
    * Si en "Chip" aparece Apple M1, M2 o M4, tu arquitectura es **ARM64**.
@@ -63,7 +63,9 @@ Si ya usas Linux, mantén la soberanía usando el hipervisor del kernel.
      --vcpus 2 \
      --disk size=30 \
      --os-variant rhel9.4 \
-     --location /ruta/a/tu/rhel-9.x-x86_64-dvd.iso
+     --location /ruta/a/tu/rhel-9.x-x86_64-dvd.iso \
+     --network bridge=virbr0 \
+     --graphics vnc
 
 4. **Red:** Asegúrate de que la VM esté conectada al puente virtual (bridge) para que tenga salida a internet y sea visible para tu host de gestión.
 
