@@ -12,7 +12,10 @@ Este laboratorio está diseñado como una obra de ingeniería en cuatro actos, e
 Antes de empezar con la automatización, necesitas un host con RHEL 9 operando correctamente. No importa si tu base es Windows, macOS o Linux, tenemos una guía para ti.
 - **Instrucciones de Preparación:** Consulta la guía detallada en el archivo de [preparación de VMs](docs/VM_PREPARATION.md).
     - Si tu base es **Fedora**, clona el repositorio y utiliza el [script de provisionamiento](../scripts/provision_edge_kvm.sh).
-    ⚠️ Nota: Deberas tener en tu directorio de trabajo la imagen creada en [developers.redhat.com](https://developers.redhat.com/) con [Image Builder](docs/IMAGE_BUILDER.md).
+    ```
+    $ $ ./provision_edge_kvm.sh
+    ```
+    ⚠️ Nota: Deberas tener en tu directorio de trabajo la imagen creada con [Image Builder](docs/IMAGE_BUILDER.md).
 
 ### 🛠️ Acto 1: Configuración y Orquestación (Ansible)
 Aquí es donde aplicamos el "talento y sudor". Utilizaremos un Playbook de Ansible modular para transformar una instalación limpia de RHEL en un nodo de MicroShift. Durante este proceso:
