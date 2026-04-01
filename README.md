@@ -46,7 +46,12 @@ Antes de iniciar cualquier laboratorio (AWS, Local o GCP), es obligatorio comple
 | [**GCP (Google Cloud Platform)**](./GCP) | 🚧 WIP | Próximamente. |
 
 ## ⚠️ Nota sobre Compatibilidad (Legacy Support)
-Para los estudiantes del **AWS Student Community Day - Saltillo**, los archivos originales se mantienen intactos en el directorio [AWS](./AWS). Pueden seguir las instrucciones del archivo [AWS/AWS_WALKTHROUGH](./AWS/AWS_WALKTHROUGH.md) contenido en ese directorio.
+
+### 🎓 Estudiantes del AWS Student Community Day (TecNM Saltillo)
+Si vienes de la plática en Saltillo, ¡bienvenido!.
+Para replicar el laboratorio tal cual lo viste en la presentación, te sugerimos:
+1.  **Clonar el repositorio** completo.
+2.  **Seguir las guías del direcorio [/AWS](./AWS)**, que contienen los archivos `cobra-mai-app.yaml`, el playbook y script de automatización que utilizamos durante la demo.
 
 Para [fedora-edge](./fedora-edge) utiliza la estructura modular en `/ansible`, `/scripts` y `/manifests`.
 
