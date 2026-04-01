@@ -71,6 +71,18 @@ Si ya usas Linux, mantén la soberanía usando el hipervisor del kernel.
 
 ---
 
+## ✅ Acto 0.5: El Juez de la Verdad Científica
+
+¡Alto! Antes de proceder a la automatización, debemos asegurarnos de que los cimientos son lo suficientemente fuertes para sostener la carga. No confíes en la configuración de la interfaz gráfica; deja que el experimento dicte la realidad.
+
+1. **Sube el validador:** Transfiere el [script de verificación](scripts/check_requirements.sh) de requisitos a tu nueva VM (puedes usar SCP o clonar este repositorio directamente en tu VM).
+2. **Ejecuta el Juez:** Dale permisos de ejecución y corre el script para confirmar que tu CPU, RAM y almacenamiento cumplen con los estándares mínimos para MicroShift.
+3. **El Veredicto:**
+   * **Si todo está en verde ✅ :** Tu infraestructura ha pasado la prueba. Regresa al archivo principal de este repositorio y continúa con las instrucciones a partir del **Acto 1: Configuración (Ansible)**.
+   * **Si algo falla ❌ :** Ajusta los recursos de tu máquina virtual y vuelve a ejecutar la prueba. No intentes construir sobre un terreno inestable.
+
+---
+
 *Geek by nature, Linux by choice, Fedora of course...*
 
 ---
