@@ -10,10 +10,9 @@ Este laboratorio está diseñado como una obra de ingeniería en cuatro actos, e
 
 ### 📍 Acto 0: Los Cimientos (La VM)
 Antes de empezar con la automatización, necesitas un host con RHEL 9 operando correctamente. No importa si tu base es Windows, macOS o Linux, tenemos una guía para ti.
-* **Instrucciones de Preparación:** Consulta la guía detallada en el archivo de [preparación de VMs](docs/VM_PREPARATION.md).
-
-### ✅ Acto 0.5: El Juez de Hardware
-No confíes, verifica. Una vez que tu VM esté encendida y tengas acceso a ella, el primer paso es confirmar que los recursos asignados son suficientes para soportar la carga de MicroShift. Ejecutaremos un [script](scripts/check_requirements.sh) de validación que funcionará como un "smoke test" para tu CPU, RAM y almacenamiento.
+- **Instrucciones de Preparación:** Consulta la guía detallada en el archivo de [preparación de VMs](docs/VM_PREPARATION.md).
+    - Si tu base es **Fedora**, clona el repositorio y utiliza el [script de provisionamiento](../scripts/provision_edge_kvm.sh).
+    ⚠️ Nota: Deberas tener en tu directorio de trabajo la imagen creada en [developers.redhat.com](https://developers.redhat.com/) con [Image Builder](docs/IMAGE_BUILDER.md).
 
 ### 🛠️ Acto 1: Configuración y Orquestación (Ansible)
 Aquí es donde aplicamos el "talento y sudor". Utilizaremos un Playbook de Ansible modular para transformar una instalación limpia de RHEL en un nodo de MicroShift. Durante este proceso:
@@ -33,12 +32,6 @@ El clímax del proyecto. Demostraremos la potencia de la inmutabilidad y la coex
 "La prueba de todo conocimiento es el experimento. El experimento es el único juez de la verdad científica". — Richard P. Feynman.
 
 Este proyecto es tu bandera de **Soberanía Operativa**. Al miniaturizar el clúster, recuperas el control total, eliminas el "Vendor Lock-in" de las nubes públicas y garantizas que la tecnología sea una herramienta a tu servicio, y no una renta perpetua.
-
-### 🎓 Estudiantes del AWS Student Community Day (TecNM Saltillo)
-Si vienes de la plática en Saltillo, ¡bienvenido!.
-Para replicar el laboratorio tal cual lo viste en la presentación, te sugerimos:
-1.  **Clonar el repositorio** completo.
-2.  **Seguir las guías del direcorio [/AWS](../AWS)**, que contienen los archivos `cobra-mai-app.yaml` y el playbook y script de automatización que utilizamos durante la demo.
 
 ---
 **Geek by nature, Linux by choice, Fedora of course...**
