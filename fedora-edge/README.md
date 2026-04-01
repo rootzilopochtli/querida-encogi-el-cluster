@@ -13,7 +13,7 @@ Antes de empezar con la automatización, necesitas un host con RHEL 9 operando c
 - **Instrucciones de Preparación:** Consulta la guía detallada en el archivo de [preparación de VMs](docs/VM_PREPARATION.md).
     - Si tu base es **Fedora**, clona el repositorio y utiliza el [script de provisionamiento](../scripts/provision_edge_kvm.sh).
     ```
-    $ $ ./provision_edge_kvm.sh
+    $ ./provision_edge_kvm.sh
     ```
     ⚠️ Nota: Deberas tener en tu directorio de trabajo la imagen creada con [Image Builder](docs/IMAGE_BUILDER.md).
 
