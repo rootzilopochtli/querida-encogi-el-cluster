@@ -31,6 +31,15 @@ Para este laboratorio, el "Juez de Hardware" requiere que tu instancia cumpla co
 
 ---
 
+## ⚠️ Tabla de Compatibilidad de Arquitectura
+
+| Si tu computadora tiene... | Debes bajar la ISO de RHEL... | Arquitectura Técnica |
+| :--- | :--- | :--- |
+| Apple Silicon (M1, M2, M3, M4) | RHEL 9 ARM64 (aarch64) | ARM |
+| Procesador Intel o AMD | RHEL 9 x86_64 | x86 |
+
+---
+
 ## 🪟 Windows (VirtualBox)
 
 1. **Software Necesario:** Descarga e instala VirtualBox junto con su Extension Pack.
@@ -57,15 +66,6 @@ Si ya usas Linux, mantén la soberanía usando el hipervisor del kernel.
      --location /ruta/a/tu/rhel-9.x-x86_64-dvd.iso
 
 4. **Red:** Asegúrate de que la VM esté conectada al puente virtual (bridge) para que tenga salida a internet y sea visible para tu host de gestión.
-
----
-
-## ⚠️ Tabla de Compatibilidad de Arquitectura
-
-| Si tu computadora tiene... | Debes bajar la ISO de RHEL... | Arquitectura Técnica |
-| :--- | :--- | :--- |
-| Apple Silicon (M1, M2, M3, M4) | RHEL 9 ARM64 (aarch64) | ARM |
-| Procesador Intel o AMD | RHEL 9 x86_64 | x86 |
 
 ---
 
