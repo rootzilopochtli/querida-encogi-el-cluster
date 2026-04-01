@@ -1,7 +1,5 @@
 # MicroShift en AWS ☁️
 
-![Banner](./banner.png)
-
 Este directorio contiene los manifiestos y scripts para desplegar un nodo compacto de MicroShift en AWS Ohio (`us-east-2`).
 
 ## 🛠️ Contenido
