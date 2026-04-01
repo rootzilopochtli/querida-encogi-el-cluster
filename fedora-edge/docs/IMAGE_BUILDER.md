@@ -21,7 +21,7 @@ Busca la sección de **Red Hat Enterprise Linux** y selecciona la opción de "M�
 Al seleccionar **Virtual Guest image**, serás redirigido al asistente (wizard) de Image Builder en la consola de Red Hat.
 
 1. **Salida de Imagen:** Selecciona *Red Hat Enterprise Linux (RHEL) 9* y la arquitectura de tu equipo (x86_64 o aarch64). Elige el formato **Virtualization - Guest Image (.qcow2)**.
-2. **Registro:** Selecciona tu **Llave de activación** (previamente configurada en los [prerrequisitos globales](../docs/SETUP_RESOURCES.md) del repositorio). Esto asegura que la imagen nazca con acceso a los repositorios oficiales de Red Hat.
+2. **Registro:** Selecciona tu **Llave de activación** (previamente configurada en los [prerrequisitos globales](../../docs/SETUP_RESOURCES.md) del repositorio). Esto asegura que la imagen nazca con acceso a los repositorios oficiales de Red Hat.
 3. **Seguridad y Revisión:** En el paso de seguridad, puedes avanzar hacia "Revisar y finalizar" (Review and finish) para mantener la configuración base inmutable.
 4. **Creación del Blueprint:** Haz clic en **Create blueprint** para guardar esta configuración técnica.
 
