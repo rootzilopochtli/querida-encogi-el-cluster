@@ -32,6 +32,36 @@ $ ./check_remote_microshift.sh
 $ envsubst < TU_ARCHIVO.yaml | oc apply -f -
 ```
 
+---
+
+## 🗺️ Arquitectura del Experimento: El Mapa de la Soberanía
+
+Para entender cómo encogimos el clúster, debemos observar el flujo de la "Verdad Científica". No es magia, es una transición orquestada desde tu terminal local (**Ragnarok**) hacia el borde, ya sea en tu propia laptop o en la nube.
+
+```mermaid
+graph TD
+    %% Nodos Principales
+    A[💻 Terminal Local: Ragnarok] -->|Acto 1: Ansible| B{📦 Infraestructura}
+
+    %% Escenarios
+    B -->|Escenario Local| C[🐧 Fedora Edge: KVM/UTM]
+    B -->|Escenario Cloud| D[☁️ AWS: EC2 RHEL 9]
+
+    %% Estados de MicroShift
+    C -->|Acto 2: mTLS| E[⚙️ MicroShift Ready]
+    D -->|Acto 2: mTLS| E
+
+    %% El Clímax
+    E -->|Acto 3: Verdad Científica| F((🚀 Payload: RHEL 10))
+
+    %% Estilos
+    style A fill:#2f343f,stroke:#5294e2,color:#fff
+    style B fill:#fdf6e3,stroke:#b58900
+    style F fill:#cc0000,stroke:#333,stroke-width:4px,color:#fff
+    style E fill:#3f3,stroke:#333
+
+---
+
 ## 🛠️ Prerrequisitos Globales (Indispensables)
 Antes de iniciar cualquier laboratorio (AWS, Local o GCP), es obligatorio completar la configuración de tu ecosistema de Red Hat.
 
