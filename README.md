@@ -59,6 +59,7 @@ graph TD
     style B fill:#fdf6e3,stroke:#b58900
     style F fill:#cc0000,stroke:#333,stroke-width:4px,color:#fff
     style E fill:#3f3,stroke:#333
+```
 
 ---
 
